@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Projects</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f2f7;
+    --card: #ffffff;
+    --border: #e2e6f0;
+    --border2: #d0d5e8;
+    --green: #00a86b;
+    --green-bg: #e6f7f2;
+    --red: #e63950;
+    --red-bg: #fdeef0;
+    --text: #1a1f2e;
+    --sub: #5a6480;
+    --muted: #9ba3bb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+    --shadow-hover: 0 8px 28px rgba(0,0,0,0.10);
+    --font-mono: 'Space Mono', monospace;
+    --font-display: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+
+  /* HEADER */
+  .header { background: var(--card); border-bottom: 1px solid var(--border); padding: 20px 24px; box-shadow: var(--shadow); }
+  .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 800; font-size: 22px; letter-spacing: -0.03em; }
+  .logo span { color: var(--green); }
+  .header-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px; }
+  .btn-add-project { background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; transition: background 0.15s; white-space: nowrap; }
+  .btn-add-project:hover { background: #009960; }
+
+  /* GRID */
+  .grid { max-width: 900px; margin: 0 auto; padding: 28px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+  /* CARD */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); transition: box-shadow 0.2s, transform 0.2s; display: flex; flex-direction: column; gap: 10px; position: relative; }
+  .card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+  .card-emoji { font-size: 28px; line-height: 1; }
+  .card-name { font-weight: 800; font-size: 17px; letter-spacing: -0.02em; }
+  .card-desc { font-family: var(--font-mono); font-size: 11px; color: var(--sub); line-height: 1.6; flex: 1; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+  .card-tag { font-family: var(--font-mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; background: var(--bg); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 7px; }
+  .btn-launch { background: var(--text); color: #fff; border: none; border-radius: 7px; padding: 8px 16px; font-family: var(--font-mono); font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 0.04em; transition: background 0.15s; text-decoration: none; display: inline-block; }
+  .btn-launch:hover { background: var(--green); }
+  .card-actions { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+  .card:hover .card-actions { opacity: 1; }
+  .btn-icon { background: var(--bg); border: 1px solid var(--border2); border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .btn-icon:hover { background: var(--border); }
+  .btn-icon.del:hover { background: var(--red-bg); border-color: var(--red); }
+
+  /* EMPTY STATE */
+  .empty { max-width: 900px; margin: 60px auto; text-align: center; padding: 20px; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-weight: 700; font-size: 18px; margin-bottom: 8px; }
+  .empty-sub { font-family: var(--font-mono); font-size: 12px; color: var(--sub); }
+
+  /* MODAL */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--card); border-radius: 16px; padding: 28px; width: 100%; max-width: 460px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); }
+  .modal-title { font-weight: 800; font-size: 18px; margin-bottom: 22px; }
+  .field { margin-bottom: 14px; }
+  .field label { font-family: var(--font-mono); font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 5px; }
+  .field input, .field textarea, .field select { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: var(--font-mono); font-size: 12px; outline: none; transition: border-color 0.15s; resize: vertical; }
+  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--green); background: #fff; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-save { flex: 1; background: var(--green); color: #fff; border: none; border-radius: 8px; padding: 11px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+  .btn-save:hover { background: #009960; }
+  .btn-cancel { background: var(--bg); color: var(--sub); border: 1px solid var(--border2); border-radius: 8px; padding: 11px 18px; font-family: var(--font-mono); font-size: 12px; cursor: pointer; transition: background 0.15s; }
+  .btn-cancel:hover { background: var(--border); }
+  .emoji-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .emoji-opt { font-size: 22px; cursor: pointer; padding: 4px; border-radius: 6px; border: 2px solid transparent; transition: border-color 0.1s; line-height: 1; }
+  .emoji-opt.selected { border-color: var(--green); background: var(--green-bg); }
+  .emoji-opt:hover { border-color: var(--border2); }
+
+  @media(max-width: 480px) {
+    .grid { grid-template-columns: 1fr; padding: 16px; }
+    .card-actions { opacity: 1; }
+    .header { padding: 16px; }
+    .logo { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="logo">My<span>Projects</span></div>
+      <div class="header-sub">Personal launchpad</div>
+    </div>
+    <button class="btn-add-project" onclick="openModal()">+ Add Project</button>
+  </div>
+</div>
+
+<div id="grid-wrap"></div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add Project</div>
+    <div class="field">
+      <label>Emoji Icon</label>
+      <div class="emoji-row" id="emoji-row">
+        <span class="emoji-opt selected" onclick="selectEmoji(this)">🚀</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">📊</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🎯</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">💡</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🛠️</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">📱</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🗂️</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">💰</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">📈</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🔗</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🧠</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">✈️</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>Project Name</label>
+      <input type="text" id="f-name" placeholder="e.g. SwingTrader">
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="f-desc" rows="2" placeholder="What does this project do?"></textarea>
+    </div>
+    <div class="field">
+      <label>URL / Link</label>
+      <input type="text" id="f-url" placeholder="https://yourname.github.io/project">
+    </div>
+    <div class="field">
+      <label>Tag (optional)</label>
+      <input type="text" id="f-tag" placeholder="e.g. Finance, Travel, Tools">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const EMOJIS = ['🚀','📊','🎯','💡','🛠️','📱','🗂️','💰','📈','🔗','🧠','✈️'];
+
+  let projects = JSON.parse(localStorage.getItem('myprojects') || 'null') || [
+    { id: 1, emoji: '📊', name: 'SwingTrader', desc: 'Swing trade tracker with position sizer, equity curve, P&L charts and open position alerts.', url: '', tag: 'Finance' }
+  ];
+  let nextId = projects.length ? Math.max(...projects.map(p=>p.id))+1 : 1;
+  let editingId = null;
+  let selectedEmoji = '🚀';
+
+  function save() { localStorage.setItem('myprojects', JSON.stringify(projects)); }
+
+  function render() {
+    const wrap = document.getElementById('grid-wrap');
+    if (!projects.length) {
+      wrap.innerHTML = `<div class="empty"><div class="empty-icon">🗂️</div><div class="empty-title">No projects yet</div><div class="empty-sub">Tap "+ Add Project" to add your first one</div></div>`;
+      return;
+    }
+    wrap.innerHTML = `<div class="grid">${projects.map(p => `
+      <div class="card">
+        <div class="card-actions">
+          <div class="btn-icon" onclick="editProject(${p.id})" title="Edit">✏️</div>
+          <div class="btn-icon del" onclick="deleteProject(${p.id})" title="Delete">🗑️</div>
+        </div>
+        <div class="card-emoji">${p.emoji}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-desc">${p.desc}</div>
+        <div class="card-footer">
+          <span class="card-tag">${p.tag || 'Project'}</span>
+          ${p.url ? `<a class="btn-launch" href="${p.url}" target="_blank">Launch →</a>` : `<span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">No URL set</span>`}
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  function openModal(id = null) {
+    editingId = id;
+    document.getElementById('modal-title').textContent = id ? 'Edit Project' : 'Add Project';
+    if (id) {
+      const p = projects.find(x => x.id === id);
+      document.getElementById('f-name').value = p.name;
+      document.getElementById('f-desc').value = p.desc;
+      document.getElementById('f-url').value = p.url || '';
+      document.getElementById('f-tag').value = p.tag || '';
+      setEmojiSelection(p.emoji);
+    } else {
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-desc').value = '';
+      document.getElementById('f-url').value = '';
+      document.getElementById('f-tag').value = '';
+      setEmojiSelection('🚀');
+    }
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(() => document.getElementById('f-name').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+    editingId = null;
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function setEmojiSelection(emoji) {
+    selectedEmoji = emoji;
+    document.querySelectorAll('.emoji-opt').forEach(el => {
+      el.classList.toggle('selected', el.textContent === emoji);
+    });
+    // if custom emoji not in list, still store it
+    if (!EMOJIS.includes(emoji)) selectedEmoji = emoji;
+  }
+
+  function selectEmoji(el) {
+    document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedEmoji = el.textContent;
+  }
+
+  function saveProject() {
+    const name = document.getElementById('f-name').value.trim();
+    const desc = document.getElementById('f-desc').value.trim();
+    const url = document.getElementById('f-url').value.trim();
+    const tag = document.getElementById('f-tag').value.trim();
+    if (!name) { document.getElementById('f-name').focus(); return; }
+    if (editingId) {
+      const idx = projects.findIndex(p => p.id === editingId);
+      projects[idx] = { ...projects[idx], emoji: selectedEmoji, name, desc, url, tag };
+    } else {
+      projects.push({ id: nextId++, emoji: selectedEmoji, name, desc, url, tag });
+    }
+    save(); closeModal(); render();
+  }
+
+  function editProject(id) { openModal(id); }
+
+  function deleteProject(id) {
+    if (!confirm('Remove this project?')) return;
+    projects = projects.filter(p => p.id !== id);
+    save(); render();
+  }
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  render();
+</script>
+</body>
+</html>
